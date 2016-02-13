@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+	<head>
+
+		<meta charset="UTF-8"/>
+		<title>Three js</title>
+	
+	</head>
+	<body>
+		<script src="js/three.min.js"></script>
+		<script src="js/controls/OrbitControls.js"></script>
+		<script>
+			var scene = new THREE.Scene();
+			var camera = new THREE.OrthographicCamera( window.innerWidth / - 2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / - 2, - 100, 100 );
+			camera.position.x = 5;
+			camera.position.y = 5;
+			camera.position.z = 10;
+			camera.lookAt( scene.position );
+			camera.zoom = 5;
+			camera.updateProjectionMatrix();
+			
+			var renderer = new THREE.WebGLRenderer();
+			var controls = new THREE.OrbitControls( camera, renderer.domElement );
+				//controls.addEventListener( 'change', render ); // add this only if there is no animation loop (requestAnimationFrame)
+				controls.enableDamping = true;
+				controls.dampingFactor = 0.25;
+				controls.enableZoom = false;
+			var geometry = new THREE.BoxGeometry( 1, 1, 1 );
+			var material = new THREE.MeshBasicMaterial( { color: 0xffffff, opacity: 0.1 } );
+
+			var points = [];
+			for(var zz=0;zz<100;zz++){
+				for(var xx=0;xx<100;xx++){
+					point = new THREE.Mesh( geometry, material );
+					point.position.z = zz-50;
+					point.position.x = xx-50;
+					point.position.y = 0;
+					scene.add(point);
+					points[zz*100+xx] = point;
+				}
+				
+			}
+			var materials = [];
+			
+			for(var ii=0;ii<100;ii++){
+				materials[ii] = new THREE.MeshBasicMaterial( { color:  20*ii, opacity: 0.1} );
+			}
+			
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			document.body.appendChild( renderer.domElement );
+			var time = 0;
+			var PI = 3.141592;
+			var render = function render() {
+				requestAnimationFrame( render );
+				renderer.render( scene, camera );
+				time+=1/4;
+				for(var ii=0;ii<10000;ii++){
+					points[ii].position.y=16*Math.sin(time)*Math.sin(2*PI*points[ii].position.z/100)*Math.sin(2*PI*points[ii].position.x/100);
+					if(points[ii].position.y > 3){
+						points[ii].material = materials[3];
+					}
+					if(points[ii].position.y > 6){
+						points[ii].material = materials[12];
+					}
+				}
+			}
+			render();
+			
+		</script>
+	</body>
+</html>
