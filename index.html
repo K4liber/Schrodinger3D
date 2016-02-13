@@ -43,7 +43,7 @@
 			var materials = [];
 			
 			for(var ii=0;ii<100;ii++){
-				materials[ii] = new THREE.MeshBasicMaterial( { color:  20*ii, opacity: 0.1} );
+				materials[ii] = new THREE.MeshBasicMaterial( { color:  10*ii, opacity: 0.1} );
 			}
 			
 			renderer.setSize( window.innerWidth, window.innerHeight );
@@ -56,12 +56,10 @@
 				time+=1/4;
 				for(var ii=0;ii<10000;ii++){
 					points[ii].position.y=16*Math.sin(time)*Math.sin(2*PI*points[ii].position.z/100)*Math.sin(2*PI*points[ii].position.x/100);
-					if(points[ii].position.y > 3){
-						points[ii].material = materials[3];
-					}
-					if(points[ii].position.y > 6){
-						points[ii].material = materials[12];
-					}
+					
+					var index = Math.abs(parseInt(points[ii].position.y));
+					points[ii].material = materials[index];
+					
 				}
 			}
 			render();
