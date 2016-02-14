@@ -13,13 +13,16 @@
 		<script src="js/three.min.js"></script>
 		<script src="js/controls/OrbitControls.js"></script>
 		<script>
+			var PI = 3.141592;
 			var scene = new THREE.Scene();
-			var camera = new THREE.OrthographicCamera( window.innerWidth / - 2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / - 2, - 200, 200 );
+			var camera = new THREE.OrthographicCamera( window.innerWidth / - 2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / - 2, - 300, 300 );
 			camera.position.x = 5;
 			camera.position.y = 5;
 			camera.position.z = 10;
 			camera.lookAt( scene.position );
-			camera.zoom = 5;
+			camera.zoom = 3;
+
+
 			camera.updateProjectionMatrix();
 			
 			var renderer = new THREE.WebGLRenderer({
@@ -31,12 +34,13 @@
 				controls.dampingFactor = 0.25;
 				controls.enableZoom = false;
 			var geometry = new THREE.BoxGeometry( 1, 1, 1 );
-			var material = new THREE.MeshBasicMaterial( { color: 0xffffff, opacity: 0.1 } );
+			
 		
 			var points = [];
 			var width = 100;
 			for(var zz=0;zz<width;zz++){
 				for(var xx=0;xx<width;xx++){
+					var material = new THREE.MeshBasicMaterial( { color: 0xffffff, transparent:true, opacity: 0.8 } );
 					point = new THREE.Mesh( geometry, material );
 					point.position.z = zz-width/2;
 					point.position.x = xx-width/2;
@@ -46,16 +50,97 @@
 				}
 				
 			}
-			var materials = [];
-			
+
+			var colors = [];
 			for(var ii=0;ii<100;ii++){
-				materials[ii] = new THREE.MeshBasicMaterial( { color:  30+10*ii, transparent:true, opacity: 0.7} );
+				colors[ii] = new THREE.Color( 0.1, 0.1+ii/100, 0.1+ii/100 );
 			}
+			
+			//Axis
+			var axisMaterial = new THREE.MeshBasicMaterial( { color: 0xffffff, transparent:true, opacity: 0.4 } );
+			
+			var xAxisGeometry = new THREE.BoxGeometry( width*2, 1, 1 );
+			var xAxis = new THREE.Mesh( xAxisGeometry, axisMaterial );
+			xAxis.position.x = 0;
+			xAxis.position.y = 0;
+			xAxis.position.z = -width/2-1;
+			
+			var yAxisGeometry = new THREE.BoxGeometry( 1, width, 1 );
+			var yAxis = new THREE.Mesh( yAxisGeometry, axisMaterial );
+			yAxis.position.x = -width/2-1;
+			yAxis.position.y = 0;
+			yAxis.position.z = -width/2-1;
+			
+			var zAxisGeometry = new THREE.BoxGeometry( 1, 1, width*2 );
+			var zAxis = new THREE.Mesh( zAxisGeometry, axisMaterial );
+			zAxis.position.x = -width/2-1;
+			zAxis.position.y = 0;
+			zAxis.position.z = 0;
+			
+			var axisCylinderGeometry =  new THREE.CylinderGeometry(0, 2, 8, 20, 1, true);
+			var xAxisCylinder = new THREE.Mesh( axisCylinderGeometry, axisMaterial );
+			xAxisCylinder.position.x = -width/2-1;
+			xAxisCylinder.position.y = width/2+4;
+			xAxisCylinder.position.z = -width/2-1;
+			
+			var yAxisCylinder = new THREE.Mesh( axisCylinderGeometry, axisMaterial );
+			yAxisCylinder.position.x = width+4;
+			yAxisCylinder.position.y = 0;
+			yAxisCylinder.position.z = -width/2-1;
+			//create a point to lookAt
+			var focalPoint = new THREE.Vector3(
+				yAxisCylinder.position.x,
+				yAxisCylinder.position.y,
+				yAxisCylinder.position.z - 12
+			);
+			//all that remains is setting the up vector (if needed) and use lookAt
+			yAxisCylinder.up = new THREE.Vector3(0,0,1);//Z axis up
+			yAxisCylinder.lookAt(focalPoint); 
+			
+			var zAxisCylinder = new THREE.Mesh( axisCylinderGeometry, axisMaterial );
+			zAxisCylinder.position.x = -width/2-1;
+			zAxisCylinder.position.y = 0;
+			zAxisCylinder.position.z = width+4;
+			//create a point to lookAt
+			var focalPoint = new THREE.Vector3(
+				zAxisCylinder.position.x - 12,
+				zAxisCylinder.position.y,
+				zAxisCylinder.position.z
+			);
+			//all that remains is setting the up vector (if needed) and use lookAt
+			zAxisCylinder.up = new THREE.Vector3(0,0,1);//Z axis up
+			zAxisCylinder.lookAt(focalPoint); 
+			
+			scene.add(xAxis);
+			scene.add(yAxis);
+			scene.add(zAxis);
+			
+			scene.add(xAxisCylinder);
+			scene.add(yAxisCylinder);
+			scene.add(zAxisCylinder);
+			
+			//Wells
+			var wellsMaterial = new THREE.MeshBasicMaterial( { color: 0x55ffff, transparent:true, opacity: 0.09 } );
+			
+			var xWellGeometry = new THREE.BoxGeometry( width, width/2, 1 );
+			var xWell = new THREE.Mesh( xWellGeometry, wellsMaterial );
+			xWell.position.x = 0;
+			xWell.position.y = 0;
+			xWell.position.z = -width/2-1;
+			
+			var yWellGeometry = new THREE.BoxGeometry( 1, width/2, width );
+			var yWell = new THREE.Mesh( yWellGeometry, wellsMaterial );
+			yWell.position.x = -width/2-1;
+			yWell.position.y = 0;
+			yWell.position.z = 0;
+			
+			scene.add(xWell);
+			scene.add(yWell);
 			
 			renderer.setSize( window.innerWidth, window.innerHeight );
 			document.body.appendChild( renderer.domElement );
 			var time = 0;
-			var PI = 3.141592;
+			
 			var energies = [2, 5, 7];
 			var render = function render() {
 				requestAnimationFrame( render );
@@ -67,9 +152,9 @@
 						points[ii].position.y+=10*Math.sin(energies[ll]*energies[ll]*time)*Math.sin(energies[ll]*PI*(points[ii].position.z+width/2)/width)*Math.sin(energies[ll]*PI*(points[ii].position.x+width/2)/width);
 					}
 					var index = Math.abs(parseInt(points[ii].position.y));
-					points[ii].material = materials[index];
+					points[ii].material.color = colors[index];
 					if(points[ii].position.y <1)
-						points[ii].material = materials[0];
+						points[ii].material.color = colors[0];
 				}
 			}
 			
