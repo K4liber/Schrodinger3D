@@ -4,14 +4,17 @@
 
 		<meta charset="UTF-8"/>
 		<title>Three js</title>
-	
+		<style type="text/css">
+			body, html {margin: 0; padding: 0;}
+			canvas {position: absolute;}
+		</style>
 	</head>
 	<body>
 		<script src="js/three.min.js"></script>
 		<script src="js/controls/OrbitControls.js"></script>
 		<script>
 			var scene = new THREE.Scene();
-			var camera = new THREE.OrthographicCamera( window.innerWidth / - 2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / - 2, - 100, 100 );
+			var camera = new THREE.OrthographicCamera( window.innerWidth / - 2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / - 2, - 200, 200 );
 			camera.position.x = 5;
 			camera.position.y = 5;
 			camera.position.z = 10;
@@ -19,7 +22,9 @@
 			camera.zoom = 5;
 			camera.updateProjectionMatrix();
 			
-			var renderer = new THREE.WebGLRenderer();
+			var renderer = new THREE.WebGLRenderer({
+				antialiasing: true
+			});
 			var controls = new THREE.OrbitControls( camera, renderer.domElement );
 				//controls.addEventListener( 'change', render ); // add this only if there is no animation loop (requestAnimationFrame)
 				controls.enableDamping = true;
@@ -27,41 +32,47 @@
 				controls.enableZoom = false;
 			var geometry = new THREE.BoxGeometry( 1, 1, 1 );
 			var material = new THREE.MeshBasicMaterial( { color: 0xffffff, opacity: 0.1 } );
-
+		
 			var points = [];
-			for(var zz=0;zz<100;zz++){
-				for(var xx=0;xx<100;xx++){
+			var width = 100;
+			for(var zz=0;zz<width;zz++){
+				for(var xx=0;xx<width;xx++){
 					point = new THREE.Mesh( geometry, material );
-					point.position.z = zz-50;
-					point.position.x = xx-50;
+					point.position.z = zz-width/2;
+					point.position.x = xx-width/2;
 					point.position.y = 0;
 					scene.add(point);
-					points[zz*100+xx] = point;
+					points[zz*width+xx] = point;
 				}
 				
 			}
 			var materials = [];
 			
 			for(var ii=0;ii<100;ii++){
-				materials[ii] = new THREE.MeshBasicMaterial( { color:  10*ii, opacity: 0.1} );
+				materials[ii] = new THREE.MeshBasicMaterial( { color:  30+10*ii, transparent:true, opacity: 0.7} );
 			}
 			
 			renderer.setSize( window.innerWidth, window.innerHeight );
 			document.body.appendChild( renderer.domElement );
 			var time = 0;
 			var PI = 3.141592;
+			var energies = [2, 5, 7];
 			var render = function render() {
 				requestAnimationFrame( render );
 				renderer.render( scene, camera );
-				time+=1/4;
-				for(var ii=0;ii<10000;ii++){
-					points[ii].position.y=16*Math.sin(time)*Math.sin(2*PI*points[ii].position.z/100)*Math.sin(2*PI*points[ii].position.x/100);
-					
+				time+=1/100;
+				for(var ii=0;ii<width*width;ii++){
+					points[ii].position.y = 0;
+					for(var ll=0;ll<energies.length;ll++){
+						points[ii].position.y+=10*Math.sin(energies[ll]*energies[ll]*time)*Math.sin(energies[ll]*PI*(points[ii].position.z+width/2)/width)*Math.sin(energies[ll]*PI*(points[ii].position.x+width/2)/width);
+					}
 					var index = Math.abs(parseInt(points[ii].position.y));
 					points[ii].material = materials[index];
-					
+					if(points[ii].position.y <1)
+						points[ii].material = materials[0];
 				}
 			}
+			
 			render();
 			
 		</script>
